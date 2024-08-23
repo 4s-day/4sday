@@ -12,16 +12,18 @@ import requests
 import os
 from datetime import datetime
 
+# Retrieve Firebase credentials from Streamlit secrets
+firebase_cred = st.secrets["FIREBASE_CRED"]
 
-cred2 = credentials.Certificate(r"C:\Users\Blnd\Desktop\dd\sassa.json")
+# Initialize Firebase with the credentials dictionary
+cred2 = credentials.Certificate(firebase_cred)
+
 try:
     firebase_admin.get_app()
 except ValueError:
     firebase_admin.initialize_app(cred2, {
         'databaseURL': 'https://balla-74d0e-default-rtdb.firebaseio.com/'
     })
-
-
 st.set_page_config(page_title="4S-day", initial_sidebar_state="auto", layout="centered")
 
 hide_streamlit_style = """
@@ -43,7 +45,7 @@ footer:after {
 </style>
 """
 
-iii = r"C:\Users\Blnd\Desktop\dd\ll.png"
+iii = r"ll.png"
 image4 = Image.open(iii)
 
 st.sidebar.image(image4)
@@ -66,7 +68,6 @@ def Home():
         day = st.text_area("Talk about your day to your friends😃", height=1000)
 
         fil = st.file_uploader('Uplode image or file if needed')
-        rate = st.slider("dont forget to rate your day😉", max_value=10)
 
 
         a = st.button("submit")
@@ -86,7 +87,6 @@ def Home():
             # Create the data to be saved
             data_to_save = {
                 "day": day,
-
             }
 
             # Add file details if a file is uploaded
@@ -96,7 +96,7 @@ def Home():
 
             # Save the data to Firebase
             reff.child("story").child(name).child(d).set(data_to_save)
-            reff.child("story").child(name).child(d).child("rate").set(rate)
+
             st.success("Your day has successfully submitted!")
 
 def ViewDay():
@@ -115,12 +115,11 @@ def ViewDay():
     if st.button("see"):
         reff = firebase_db.reference()
         data = reff.child("story").child(nn).child(d).get()
-        rate = reff.child("story").child(nn).child(d).child("rate").get()
+
         if data:
             st.subheader(f"Entry for {d}:")
             st.write(data.get("day", "No entry for this day."))
 
-            st.write(f"{nn}"f's day was {rate}/10')
             # Check if there's a file associated with this entry
             if "file_name" in data and "file_content" in data:
                 st.subheader("Attached File:")
